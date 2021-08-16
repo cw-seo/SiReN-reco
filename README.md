@@ -8,7 +8,7 @@
 
 
 
-### Note. In this implementation, we use LightGCN (X. He et al., SIGIR'20) as the GNN model for the graph with positive edges in our SiReN method. 
+Note. In this implementation, we use LightGCN (X. He et al., SIGIR'20) as the GNN model for the graph with positive edges in our SiReN method. 
 
 
 

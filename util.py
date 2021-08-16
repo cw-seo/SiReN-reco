@@ -78,8 +78,6 @@ def gen_top_K(data_class,emb,train,directory_):
         reco[j]=torch.topk(embedding_[0],300).indices.cpu().numpy()+1
         pbar.update(1)
     pbar.close()
-    # with open(directory_,'wb') as fw:
-    #     pickle.dump(reco,fw)
     return reco
 
 

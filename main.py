@@ -134,12 +134,12 @@ if __name__=='__main__':
                         )
     parser.add_argument('--epoch',
                         type = int,
-                        default = 100,
+                        default = 1000,
                         help = "The number of epochs"
                         )
     parser.add_argument('--reg',
                         type = float,
-                        default = 0.1,
+                        default = 0.05,
                         help = "Regularization coefficient"
                         )
     args = parser.parse_args()
