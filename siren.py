@@ -47,8 +47,6 @@ class SiReN(nn.Module):
         # Attntion model
         self.attn = nn.Linear(dim,dim,bias=True)
         self.q = nn.Linear(dim,1,bias=False)
-        nn.init.xavier_normal_(self.attn.weight.data)
-        nn.init.xavier_normal_(self.q.weight.data)
         self.attn_softmax = nn.Softmax(dim=1)
         
     def aggregate(self):

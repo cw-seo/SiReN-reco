@@ -35,7 +35,7 @@ python main.py --dataset ML-1M --version 1 --reg 0.1
 
 
 
-## Example : Amazon dataset
+## Example : Amazon-Book dataset
 
 ```python
 python main.py --dataset amazon --version 1 --reg 0.05
@@ -45,7 +45,7 @@ python main.py --dataset amazon --version 1 --reg 0.05
 
 
 
-## Example : yelp dataset
+## Example : Yelp dataset
 
 ```python
 python main.py --dataset yelp --version 1 --reg 0.05
