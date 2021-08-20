@@ -6,7 +6,9 @@
 
 ## This is our PyTorch implementation code for our paper:
 
-> C. Seo et al., SiReN: Sign-Aware Recommendation Using Graph Neural Networks, [Paper in arXiv][https://arxiv.org/abs/2108.08735]
+> C. Seo et al., SiReN: Sign-Aware Recommendation Using Graph Neural Networks, 
+>
+> [Paper in arXiv](https://arxiv.org/abs/2108.08735)
 
 
 
