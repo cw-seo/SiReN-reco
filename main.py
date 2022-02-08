@@ -4,15 +4,12 @@ from torch.utils.data import DataLoader
 from torch import optim
 
 from tqdm import tqdm
-from evaluator import evaluate as eva
-from util import  bipartite_dataset, deg_dist,gen_top_K
+from evaluator import evaluate as eva 
+from evaluator import evaluator as ev
+from util import  bipartite_dataset, deg_dist,gen_top_k
 from data_loader import Data_loader
-import os
-import pickle
 from siren import SiReN
 import argparse
-
-
 
 def main(args):
     data_class=Data_loader(args.dataset,args.version)
@@ -20,6 +17,7 @@ def main(args):
     print('data loading...');st=time.time()
     train,test = data_class.data_load();
     train = train.astype({'userId':'int64', 'movieId':'int64'})
+    data_class.train = train; data_class.test = test
     print('loading complete! time :: %s'%(time.time()-st))
     
     
@@ -29,7 +27,7 @@ def main(args):
     
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model= SiReN(train, data_class.num_u,data_class.num_v,offset=args.offset,num_layers = args.num_layers,MLP_layers=args.MLP_layers,dim=args.dim,device=device,reg=args.reg)#.to(device);
+    model= SiReN(train, data_class.num_u,data_class.num_v,offset=args.offset,num_layers = args.num_layers,MLP_layers=args.MLP_layers,dim=args.dim,device=device,reg=args.reg)
     model.data_p.to(device)
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr = args.lr)
@@ -49,8 +47,8 @@ def main(args):
         ds = DataLoader(training_dataset,batch_size=args.batch_size,shuffle=True)
         q=0
         pbar = tqdm(desc = 'Version : {} Epoch {}/{}'.format(args.version,EPOCH,args.epoch),total=len(ds),position=0)
-
-        for u,v,w,negs in ds:
+        
+        for u,v,w,negs in ds:   
             q+=len(u)
             st=time.time()
             optimizer.zero_grad()
@@ -63,23 +61,25 @@ def main(args):
             pbar.set_postfix({'loss':loss.item()})
 
         pbar.close()
-        if EPOCH%20==0 :
-            directory = os.getcwd() + '/results/%s/SiReN/epoch%s_batch%s_dim%s_lr%s_offset%s_K%s_num_layers%s_MLP_layers%s_threshold%s_reg%s/'%(args.dataset,EPOCH,args.batch_size,args.dim,args.lr,args.offset,args.K,args.num_layers,args.MLP_layers,threshold,args.reg)
-            if not os.path.exists(directory):
-                os.makedirs(directory)
+
+        if EPOCH%20 ==0:
+
             model.eval()
             emb = model.aggregate();
-            top_k_list = gen_top_K(data_class,emb,train,directory+'r%s_reco.pickle'%(args.version)) 
-            eval_ = eva(top_k_list,train,test,threshold,data_class.num_u,data_class.num_v,N=[10,15,20],ratings=[20,50])
+            emb_u, emb_v = torch.split(emb,[data_class.num_u,data_class.num_v])
+            emb_u = emb_u.cpu().detach(); emb_v = emb_v.cpu().detach()
+            r_hat = emb_u.mm(emb_v.t())
+            reco = gen_top_k(data_class,r_hat)
+            eval_ = ev(data_class,reco,args)
+            eval_.precision_and_recall()
+            eval_.normalized_DCG()
             print("\n***************************************************************************************")
             print(" /* Recommendation Accuracy */")
-            print('Precision at [10, 15, 20] :: ',eval_.p)
-            print('Recall at [10, 15, 20] :: ',eval_.r)
-            print('NDCG at [10, 15, 20] :: ',eval_.NDCG)
+            print('N :: %s'%(eval_.N))
+            print('Precision at :: %s'%(eval_.N),eval_.p['total'][eval_.N-1])
+            print('Recall at [10, 15, 20] :: ',eval_.r['total'][eval_.N-1])
+            print('nDCG at [10, 15, 20] :: ',eval_.nDCG['total'][eval_.N-1])
             print("***************************************************************************************")
-            directory_ = directory+'r%s_reco.pickle'%(args.version)
-            with open(directory_,'wb') as fw:
-                pickle.dump(eval_,fw)
             model.train()
 
 
@@ -93,7 +93,7 @@ if __name__=='__main__':
                         )
     parser.add_argument('--version',
                         type = int,
-                        default = 1,
+                        default =1,
                         help = "Dataset version"
                         )
     parser.add_argument('--batch_size',

@@ -7,10 +7,7 @@ from tqdm import tqdm
 
 
 
-
-
-
-class bipartite_dataset(Dataset): 
+class bipartite_dataset(Dataset):  
     def __init__(self, train,neg_dist,offset,num_u,num_v,K): 
         self.edge_1 = torch.tensor(train['userId'].values-1)
         self.edge_2 = torch.tensor(train['movieId'].values-1) +num_u
@@ -65,19 +62,18 @@ def deg_dist(train, num_v):
     deg[uni] = cou
     return torch.tensor(deg)
 
-def gen_top_K(data_class,emb,train,directory_):
-    no_items = np.array(list(set(np.arange(1,data_class.num_v+1))-set(train['movieId'])))
-    total_users = set(np.arange(1,data_class.num_u+1))
-    reco = dict()
-    pbar = tqdm(desc = 'top-k recommendation...',total=len(total_users),position=0)
-    for j in total_users:
-        pos = train[train['userId']==j]['movieId'].values-1
-        embedding_ = emb[j-1].view(1,len(emb[0])).mm(emb[data_class.num_u:].t()).detach();
-        embedding_[0][no_items-1]=-np.inf;
-        embedding_[0][pos]=-np.inf;
-        reco[j]=torch.topk(embedding_[0],300).indices.cpu().numpy()+1
-        pbar.update(1)
-    pbar.close()
+
+def gen_top_k(data_class, r_hat, K=300):
+    all_items = set(np.arange(1,data_class.num_v + 1))
+    tot_items = set(data_class.train['movieId']).union(set(data_class.test['movieId']))
+    no_items = all_items - tot_items;
+    tot_items = torch.tensor(list(tot_items)) - 1
+    no_items = (torch.tensor(list(no_items)) - 1).long()
+    r_hat[:,no_items] = -np.inf
+    for u,i in data_class.train.values[:,:-1]-1:
+        r_hat[u,i] = -np.inf
+
+    _, reco = torch.topk(r_hat,K);
+    reco = reco.numpy()
+    
     return reco
-
-

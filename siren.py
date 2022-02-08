@@ -2,7 +2,7 @@
 import torch
 from torch import nn
 from torch_geometric.data import Data
-from convols import LightGConv, LRGCCF
+from convols import LightGConv
 import torch.nn.functional as F
 
 class SiReN(nn.Module):
@@ -20,6 +20,10 @@ class SiReN(nn.Module):
 
         edge_user = torch.tensor(train[train['rating']>offset]['userId'].values-1)
         edge_item = torch.tensor(train[train['rating']>offset]['movieId'].values-1)+self.M
+        
+        
+        
+        
         edge_ = torch.stack((torch.cat((edge_user,edge_item),0),torch.cat((edge_item,edge_user),0)),0)
         self.data_p=Data(edge_index=edge_)
         
@@ -48,6 +52,9 @@ class SiReN(nn.Module):
         self.attn = nn.Linear(dim,dim,bias=True)
         self.q = nn.Linear(dim,1,bias=False)
         self.attn_softmax = nn.Softmax(dim=1)
+        
+        
+        
         
     def aggregate(self):
         # Generate embeddings z_p
@@ -88,7 +95,7 @@ class SiReN(nn.Module):
         w_ = w.to(device)
         positivebatch = torch.mul(u_ , v_ ); 
         negativebatch = torch.mul(u_.view(len(u_),1,self.embed_dim),n_)  
-        sBPR_loss =  F.logsigmoid((torch.sign(w_).view(len(u_),1) * (positivebatch.sum(dim=1).view(len(u_),1))) - negativebatch.sum(dim=2)).sum(dim=1)
-        reg_loss = u_.norm(dim=1).pow(2).sum() + v_.norm(dim=1).pow(2).sum() + n_.norm(dim=2).pow(2).sum();
+        sBPR_loss =  F.logsigmoid((((-1/2*torch.sign(w_)+2/3)).view(len(u_),1) * (positivebatch.sum(dim=1).view(len(u_),1))) - negativebatch.sum(dim=2)).sum(dim=1) # weight
+        reg_loss = u_.norm(dim=1).pow(2).sum() + v_.norm(dim=1).pow(2).sum() + n_.norm(dim=2).pow(2).sum() 
         return -torch.sum(sBPR_loss) + self.reg * reg_loss
             

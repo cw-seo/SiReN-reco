@@ -36,7 +36,7 @@ The code has been tested under Python 3.7.7. The required packages are as follow
 ## Example : ML-1M dataset
 
 ```python
-python main.py --dataset ML-1M --version 1 --reg 0.1
+python main.py --dataset ML-1M --version 1 
 ```
 
 
@@ -46,7 +46,7 @@ python main.py --dataset ML-1M --version 1 --reg 0.1
 ## Example : Amazon-Book dataset
 
 ```python
-python main.py --dataset amazon --version 1 --reg 0.05
+python main.py --dataset amazon --version 1 
 ```
 
 
@@ -56,6 +56,6 @@ python main.py --dataset amazon --version 1 --reg 0.05
 ## Example : Yelp dataset
 
 ```python
-python main.py --dataset yelp --version 1 --reg 0.05
+python main.py --dataset yelp --version 1 
 ```
 
