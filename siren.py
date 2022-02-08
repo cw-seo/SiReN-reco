@@ -35,7 +35,7 @@ class SiReN(nn.Module):
         self.convs = nn.ModuleList()
         self.mlps = nn.ModuleList()
         for _ in range(num_layers):
-            self.convs.append(LightGConv(dim,dim)) 
+            self.convs.append(LightGConv()) 
 
         
         # For the graph with negative edges
@@ -95,7 +95,7 @@ class SiReN(nn.Module):
         w_ = w.to(device)
         positivebatch = torch.mul(u_ , v_ ); 
         negativebatch = torch.mul(u_.view(len(u_),1,self.embed_dim),n_)  
-        sBPR_loss =  F.logsigmoid((((-1/2*torch.sign(w_)+2/3)).view(len(u_),1) * (positivebatch.sum(dim=1).view(len(u_),1))) - negativebatch.sum(dim=2)).sum(dim=1) # weight
+        sBPR_loss =  F.logsigmoid((((-1/2*torch.sign(w_)+3/2)).view(len(u_),1) * (positivebatch.sum(dim=1).view(len(u_),1))) - negativebatch.sum(dim=2)).sum(dim=1) # weight
         reg_loss = u_.norm(dim=1).pow(2).sum() + v_.norm(dim=1).pow(2).sum() + n_.norm(dim=2).pow(2).sum() 
         return -torch.sum(sBPR_loss) + self.reg * reg_loss
             

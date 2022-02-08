@@ -3,7 +3,7 @@
 
 from torch import Tensor
 from torch_geometric.nn import MessagePassing
-
+from torch_geometric.utils import degree
     
 class LightGConv(MessagePassing):
     def __init__(self):

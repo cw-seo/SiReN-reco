@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader
 from torch import optim
 
 from tqdm import tqdm
-from evaluator import evaluate as eva 
 from evaluator import evaluator as ev
 from util import  bipartite_dataset, deg_dist,gen_top_k
 from data_loader import Data_loader
@@ -13,7 +12,6 @@ import argparse
 
 def main(args):
     data_class=Data_loader(args.dataset,args.version)
-    threshold = round(args.offset) # To generate ground truth set 
     print('data loading...');st=time.time()
     train,test = data_class.data_load();
     train = train.astype({'userId':'int64', 'movieId':'int64'})
